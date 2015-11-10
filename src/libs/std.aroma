@@ -1,0 +1,131 @@
+; Alias
+(setg {def put \ head tail true false} setg set lambda car cdr t nil)
+
+; defun
+(setg {defun} (lambda {args body} {setg (car args) (lambda (cdr args) body)}))
+; fun
+(setg {fun} defun)
+
+; unpack
+(defun {unpack f xs} {
+    eval (join (list f) xs)
+})
+
+; pack
+(defun {pack f & xs} {
+    f xs
+})
+
+; len
+(defun {len l} {
+  if (== l {})
+    {0}
+    {+ 1 (len (tail l))}
+})
+
+; reverse
+(defun {reverse l} {
+  if (== l {})
+    {{}}
+    {join (reverse (tail l)) (head l)}
+})
+
+; fst snd trd
+(defun {fst l} {eval (car l)})
+(defun {snd l} {eval (car (cdr l))})
+(defun {trd l} {eval (car (cdr (cdr l)))})
+
+; nth
+(defun {nth n l} {
+    if (== n 0)
+        {fst l}
+        {nth (- n 1) (cdr l)}
+})
+
+; last
+(defun {last l} {nth (- (len l) 1) l})
+
+; take
+(defun {take n l} {
+  if (== n 0)
+    {nil}
+    {join (car l) (take (- n 1) (cdr l))}
+})
+
+; drop
+(defun {drop n l} {
+  if (== n 0)
+    {l}
+    {drop (- n 1) (cdr l)}
+})
+
+; split
+(defun {split n l} {list (take n l) (drop n l)})
+
+; at
+(defun {at n l} {
+  if (== n 0)
+    {fst l}
+    {elem (- n 1) (cdr l)}
+})
+
+; elem
+(defun {elem x l} {
+  if (== l nil)
+    {false}
+    {if (== x (fst l)) {true}
+                       {elem x (cdr l)}}
+})
+
+; map
+(defun {map f l} {
+  if (== l nil)
+    {nil}
+    {join (list (f (fst l))) (map f (cdr l))}
+})
+
+; reduce
+(defun {reduce f l i} {
+  if (== l nil)
+    {i}
+    {reduce f (cdr l) (f i (fst l))}
+})
+
+; filter
+(defun {filter f l} {
+  if (== l nil)
+    {nil}
+    {join (if (f (fst l)) {car l} {nil}) (filter f (cdr l))}
+})
+
+; let
+(defun {let x} {
+  (lambda {_} x) nil})
+
+; cond
+(defun {cond & cs} {
+  if (== cs nil)
+    {nil}
+    {if (fst (fst cs))
+        {snd (fst cs)}
+        {if (cdr cs)
+          {unpack cond (cdr cs)}
+          {nil}}}
+})
+
+; switch
+(defun {switch c & cs} {
+  if (== cs nil)
+    {nil}
+    {if (== c (fst (fst cs)))
+        {snd (fst cs)}
+        {unpack switch (join (list c) (cdr cs))}}
+})
+
+; Fibonacci
+(fun {fib n} {
+ cond
+    {(== n 0) 0 }
+    {(== n 1) 1 }
+    {t (+ (fib (- n 1)) (fib (- n 2))) }
+})
